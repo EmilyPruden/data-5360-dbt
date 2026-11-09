@@ -11,5 +11,7 @@ models:
     description: "Oliver's Sweets product information dimension"
   - name: oliver_dim_store
     description: "Oliver's Sweets store information dimension"
-  - name: fact_sales
-    description: "Oliver's Sweet sales fact"
+  - name: stg_employee_certifications
+    description: "Staging model for employee certifications. Each record represents a certain certification completed by a certain employee."
+  - name: fact_certifications
+    description: "Employee certification fact. Each record represents a certification completed by an employee."
