@@ -3,14 +3,46 @@
     schema = 'dw_insurance'
 )}}
 
+with db_source as(
+    SELECT
+        customerid as customer_key,
+        customerid,
+        firstname,
+        lastname,
+        dob,
+        address,
+        city,
+        state,
+        zipcode
+    FROM {{ source('insurance_landing', 'customers') }}
+)
+
+, cs_interactions_source as (
+    SELECT DISTINCT
+        customer_first_name,
+        customer_last_name,
+        customer_email
+    FROM {{ ref('stg_customer_service_interactions')}}
+)
+
+, final as (
+   SELECT
+        db.customerid,
+        coalesce(db.firstname, cs.customer_first_name) as firstname,
+        coalesce(db.lastname, cs.customer_last_name) as lastname,
+        db.dob,
+        db.address,
+        db.city,
+        db.state,
+        db.zipcode,
+        cs.customer_email
+    FROM db_source db
+    FULL JOIN cs_interactions_source cs
+        ON db.firstname = cs.customer_first_name
+        AND db.lastname = cs.customer_last_name
+)
+
 SELECT
-    customerid as customer_key,
-    customerid,
-    firstname,
-    lastname,
-    dob,
-    address,
-    city,
-    state,
-    zipcode
-FROM {{ source('insurance_landing', 'customers') }}
+    {{ dbt_utils.generate_surrogate_key(['firstname', 'lastname']) }} as customer_key,
+    *
+FROM final
